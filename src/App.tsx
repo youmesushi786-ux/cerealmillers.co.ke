@@ -200,8 +200,7 @@ function useCountUp(target: number, duration = 2000, start = false): number {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CINEMATIC BACKGROUND
-// Slide 4 renders from /public/farmer.jpg (local file)
+// CINEMATIC BACKGROUND — Slide 4 mobile fix: center the woman in the photo
 // ─────────────────────────────────────────────────────────────────────────────
 function CinematicBg({ currentSlide }: { currentSlide: number }) {
   return (
@@ -211,24 +210,53 @@ function CinematicBg({ currentSlide }: { currentSlide: number }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: currentSlide === i ? 1 : 0 }}
           transition={{ duration: 2.5, ease: 'easeInOut' }}>
-          <motion.img
-            src={img.url}
-            alt=""
-            className="w-full h-full object-cover"
-            style={{
-              objectPosition: i === 3 ? 'center 30%' : 'center center',
-              filter: i === 3
-                ? 'saturate(1.25) contrast(1.06) brightness(0.88)'
-                : 'none',
-            }}
-            animate={currentSlide === i ? { scale: [1, 1.04] } : { scale: 1 }}
-            transition={{ duration: 9, ease: 'easeInOut' }}
-          />
+
+          {i === 3 ? (
+            // ── Slide 4: special mobile/desktop handling ──
+            <>
+              {/* Mobile: shift up to show the woman clearly */}
+              <motion.img
+                src={img.url}
+                alt=""
+                className="w-full h-full object-cover block md:hidden"
+                style={{
+                  objectPosition: '50% 20%',
+                  filter: 'saturate(1.25) contrast(1.06) brightness(0.88)',
+                }}
+                animate={currentSlide === i ? { scale: [1, 1.04] } : { scale: 1 }}
+                transition={{ duration: 9, ease: 'easeInOut' }}
+              />
+              {/* Desktop: original positioning */}
+              <motion.img
+                src={img.url}
+                alt=""
+                className="w-full h-full object-cover hidden md:block"
+                style={{
+                  objectPosition: 'center 30%',
+                  filter: 'saturate(1.25) contrast(1.06) brightness(0.88)',
+                }}
+                animate={currentSlide === i ? { scale: [1, 1.04] } : { scale: 1 }}
+                transition={{ duration: 9, ease: 'easeInOut' }}
+              />
+            </>
+          ) : (
+            // ── All other slides ──
+            <motion.img
+              src={img.url}
+              alt=""
+              className="w-full h-full object-cover"
+              style={{ objectPosition: 'center center' }}
+              animate={currentSlide === i ? { scale: [1, 1.04] } : { scale: 1 }}
+              transition={{ duration: 9, ease: 'easeInOut' }}
+            />
+          )}
+
           {/* Standard cinematic overlay */}
           <div className="absolute inset-0" style={{
             background: 'linear-gradient(180deg, rgba(0,13,26,0.52) 0%, rgba(0,21,41,0.36) 50%, rgba(0,13,26,0.60) 100%)'
           }} />
-          {/* Slide-4 warm green tint to match the farmer field */}
+
+          {/* Slide-4 warm green tint */}
           {i === 3 && (
             <div className="absolute inset-0" style={{
               background: 'linear-gradient(160deg, rgba(34,85,34,0.10) 0%, rgba(201,168,76,0.07) 60%, rgba(0,13,26,0.15) 100%)',
@@ -365,16 +393,9 @@ function Marquee({ items, speed = 40, reverse = false }: { items: typeof MEMBER_
           <div key={i}
             className="flex-shrink-0 w-40 h-24 md:w-48 md:h-28 rounded-2xl flex items-center justify-center p-4 border transition-all duration-500"
             style={{ background: '#FFFFFF', borderColor: 'rgba(201,168,76,0.4)', boxShadow: '0 4px 24px rgba(0,0,0,0.18)' }}>
-            <img
-              src={item.url}
-              alt={item.name}
-              loading="lazy"
+            <img src={item.url} alt={item.name} loading="lazy"
               className="w-full h-full object-contain transition duration-500"
-              onError={(e) => {
-                const t = e.target as HTMLImageElement;
-                t.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=002147&color=C9A84C&size=160&bold=true`;
-              }}
-            />
+              onError={(e) => { const t = e.target as HTMLImageElement; t.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=002147&color=C9A84C&size=160&bold=true`; }} />
           </div>
         ))}
       </div>
@@ -440,7 +461,6 @@ function ImpactStatItem({ stat, index, isInView }: ImpactStatItemProps) {
 function Navigation({ scrollY, currentSlide, setCurrentSlide }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isScrolled = scrollY > 60;
-
   const navLinks = [
     { href: '#about', label: 'Heritage' },
     { href: '#nexus', label: 'Operations' },
@@ -449,170 +469,102 @@ function Navigation({ scrollY, currentSlide, setCurrentSlide }: NavigationProps)
     { href: '#leadership', label: 'Leadership' },
     { href: '#contact', label: 'Contact' },
   ];
-
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [isMenuOpen]);
-
   return (
     <>
-      <motion.nav
-        className="fixed top-0 w-full z-[100]"
+      <motion.nav className="fixed top-0 w-full z-[100]"
         initial={{ y: -100 }} animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: [0.215, 0.61, 0.355, 1] }}
         role="navigation" aria-label="Main Navigation">
-
-        <div
-          className="mx-3 md:mx-8 mt-3 rounded-2xl px-4 md:px-8 py-2.5 flex justify-between items-center transition-all duration-500"
+        <div className="mx-3 md:mx-8 mt-3 rounded-2xl px-4 md:px-8 py-2.5 flex justify-between items-center transition-all duration-500"
           style={{
             background: '#FFFFFF',
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(0,33,71,0.12)',
-            boxShadow: isScrolled
-              ? '0 8px 40px rgba(0,33,71,0.18), 0 2px 8px rgba(0,0,0,0.08)'
-              : '0 4px 24px rgba(0,33,71,0.12), 0 1px 4px rgba(0,0,0,0.06)',
+            boxShadow: isScrolled ? '0 8px 40px rgba(0,33,71,0.18), 0 2px 8px rgba(0,0,0,0.08)' : '0 4px 24px rgba(0,33,71,0.12), 0 1px 4px rgba(0,0,0,0.06)',
           }}>
-
-          <motion.a
-            href="#hero"
-            whileHover={{ scale: 1.03 }}
-            transition={{ type: 'spring', stiffness: 400 }}
-            aria-label="CMA Home"
-            className="flex-shrink-0">
-            <img
-              src="/logo.png"
-              alt="Cereal Millers Association Kenya"
-              className="h-10 md:h-12 w-auto object-contain"
-              style={{ maxWidth: '145px' }}
-              onError={(e) => {
-                const t = e.target as HTMLImageElement;
-                t.src = 'https://www.cerealmillers.co.ke/wp-content/uploads/2026/04/CMA@25-Logo.png';
-              }}
-            />
+          <motion.a href="#hero" whileHover={{ scale: 1.03 }} transition={{ type: 'spring', stiffness: 400 }} aria-label="CMA Home" className="flex-shrink-0">
+            <img src="/logo.png" alt="Cereal Millers Association Kenya" className="h-10 md:h-12 w-auto object-contain" style={{ maxWidth: '145px' }}
+              onError={(e) => { const t = e.target as HTMLImageElement; t.src = 'https://www.cerealmillers.co.ke/wp-content/uploads/2026/04/CMA@25-Logo.png'; }} />
           </motion.a>
-
           <div className="hidden xl:flex gap-6 items-center">
             {navLinks.map((link, i) => (
-              <motion.a
-                key={link.href}
-                href={link.href}
+              <motion.a key={link.href} href={link.href}
                 className="relative text-[10px] font-black uppercase tracking-[0.18em] transition-colors duration-300 group"
                 style={{ color: COLORS.navy }}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08 + i * 0.07 }}>
+                initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 + i * 0.07 }}>
                 {link.label}
-                <span
-                  className="absolute -bottom-0.5 left-0 w-0 h-[2px] group-hover:w-full transition-all duration-300 rounded-full"
-                  style={{ background: COLORS.orange }} />
+                <span className="absolute -bottom-0.5 left-0 w-0 h-[2px] group-hover:w-full transition-all duration-300 rounded-full" style={{ background: COLORS.orange }} />
               </motion.a>
             ))}
-
-            <motion.a
-              href="mailto:itadmin@cerealmillers.co.ke?subject=Membership Application — CMA Kenya"
+            <motion.a href="mailto:itadmin@cerealmillers.co.ke?subject=Membership Application — CMA Kenya"
               className="px-5 py-2.5 rounded-full font-black text-[9px] tracking-widest uppercase text-white whitespace-nowrap transition-all duration-300"
               style={{ background: 'linear-gradient(135deg, #002147, #003a7a)', boxShadow: '0 4px 16px rgba(0,33,71,0.30)' }}
-              whileHover={{ scale: 1.05, boxShadow: '0 8px 28px rgba(0,33,71,0.45)' }}
-              whileTap={{ scale: 0.97 }}
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.65 }}>
+              whileHover={{ scale: 1.05, boxShadow: '0 8px 28px rgba(0,33,71,0.45)' }} whileTap={{ scale: 0.97 }}
+              initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.65 }}>
               Become a Member
             </motion.a>
-
-            <motion.a
-              href="#contact"
+            <motion.a href="#contact"
               className="px-5 py-2.5 rounded-full font-black text-[9px] tracking-widest uppercase text-white whitespace-nowrap transition-all duration-300"
               style={{ background: `linear-gradient(135deg, ${COLORS.orange}, ${COLORS.gold})`, boxShadow: `0 4px 16px rgba(232,114,42,0.35)` }}
-              whileHover={{ scale: 1.05, boxShadow: `0 8px 28px rgba(232,114,42,0.55)` }}
-              whileTap={{ scale: 0.97 }}
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.73 }}>
+              whileHover={{ scale: 1.05, boxShadow: `0 8px 28px rgba(232,114,42,0.55)` }} whileTap={{ scale: 0.97 }}
+              initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.73 }}>
               Contact Us
             </motion.a>
           </div>
-
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label={isMenuOpen ? 'Close Menu' : 'Open Menu'}
-            aria-expanded={isMenuOpen}
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? 'Close Menu' : 'Open Menu'} aria-expanded={isMenuOpen}
             className="xl:hidden w-10 h-10 flex items-center justify-center rounded-full border flex-shrink-0 transition-colors duration-300"
             style={{ borderColor: 'rgba(0,33,71,0.18)', color: COLORS.navy, background: 'rgba(0,33,71,0.04)' }}>
             <div className="w-5 h-5">{isMenuOpen ? <Icons.X /> : <Icons.Menu />}</div>
           </button>
         </div>
       </motion.nav>
-
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.div
-            className="fixed inset-0 z-[120] flex"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div
-              className="absolute inset-0 backdrop-blur-md"
-              style={{ background: 'rgba(0,13,26,0.55)' }}
-              onClick={() => setIsMenuOpen(false)} />
-            <motion.div
-              className="relative ml-auto w-full max-w-xs h-full p-7 flex flex-col overflow-y-auto"
+          <motion.div className="fixed inset-0 z-[120] flex" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div className="absolute inset-0 backdrop-blur-md" style={{ background: 'rgba(0,13,26,0.55)' }} onClick={() => setIsMenuOpen(false)} />
+            <motion.div className="relative ml-auto w-full max-w-xs h-full p-7 flex flex-col overflow-y-auto"
               style={{ background: '#FFFFFF', borderLeft: '1px solid rgba(0,33,71,0.10)' }}
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
               <div className="relative z-10">
                 <div className="flex justify-between items-center mb-10">
-                  <img
-                    src="/logo.png" alt="CMA"
-                    className="h-10 w-auto object-contain"
-                    style={{ maxWidth: '120px' }}
+                  <img src="/logo.png" alt="CMA" className="h-10 w-auto object-contain" style={{ maxWidth: '120px' }}
                     onError={(e) => { const t = e.target as HTMLImageElement; t.src = 'https://www.cerealmillers.co.ke/wp-content/uploads/2026/04/CMA@25-Logo.png'; }} />
-                  <button
-                    onClick={() => setIsMenuOpen(false)}
-                    aria-label="Close Menu"
+                  <button onClick={() => setIsMenuOpen(false)} aria-label="Close Menu"
                     className="w-9 h-9 flex-shrink-0 rounded-full border flex items-center justify-center"
                     style={{ borderColor: 'rgba(0,33,71,0.15)', color: COLORS.navy }}>
                     <Icons.X />
                   </button>
                 </div>
-
                 <nav className="flex flex-col gap-0 mb-6">
                   {navLinks.map((link, i) => (
-                    <motion.a
-                      key={link.href} href={link.href}
-                      onClick={() => setIsMenuOpen(false)}
+                    <motion.a key={link.href} href={link.href} onClick={() => setIsMenuOpen(false)}
                       className="text-lg font-serif italic py-3.5 border-b flex items-center justify-between group transition-colors duration-300 hover:pl-2"
                       style={{ borderColor: 'rgba(0,33,71,0.07)', color: COLORS.navy }}
-                      initial={{ x: 40, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: i * 0.07 }}>
+                      initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.07 }}>
                       {link.label}
-                      <div className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0" style={{ color: COLORS.orange }}>
-                        <Icons.ChevronRight />
-                      </div>
+                      <div className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0" style={{ color: COLORS.orange }}><Icons.ChevronRight /></div>
                     </motion.a>
                   ))}
                 </nav>
-
-                <motion.a
-                  href="mailto:itadmin@cerealmillers.co.ke?subject=Membership Application — CMA Kenya"
+                <motion.a href="mailto:itadmin@cerealmillers.co.ke?subject=Membership Application — CMA Kenya"
                   onClick={() => setIsMenuOpen(false)}
                   className="block w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm text-white text-center mb-3"
                   style={{ background: 'linear-gradient(135deg, #002147, #003a7a)', boxShadow: '0 4px 20px rgba(0,33,71,0.3)' }}
-                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.48 }} whileTap={{ scale: 0.97 }}>
+                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.48 }} whileTap={{ scale: 0.97 }}>
                   Become a Member
                 </motion.a>
-
-                <motion.a
-                  href="#contact"
-                  onClick={() => setIsMenuOpen(false)}
+                <motion.a href="#contact" onClick={() => setIsMenuOpen(false)}
                   className="block w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm text-white text-center"
                   style={{ background: `linear-gradient(135deg, ${COLORS.orange}, ${COLORS.gold})`, boxShadow: `0 4px 20px rgba(232,114,42,0.35)` }}
-                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.56 }} whileTap={{ scale: 0.97 }}>
+                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.56 }} whileTap={{ scale: 0.97 }}>
                   Contact Us
                 </motion.a>
-
                 <div className="mt-8 pt-6" style={{ borderTop: '1px solid rgba(0,33,71,0.07)' }}>
                   <p className="text-[9px] font-black uppercase tracking-[0.4em] mb-2" style={{ color: COLORS.orange }}>Secretariat</p>
                   <p className="text-[10px] break-all font-medium" style={{ color: COLORS.navy }}>itadmin@cerealmillers.co.ke</p>
@@ -645,11 +597,9 @@ function HeroSection({ currentSlide, setCurrentSlide }: HeroSectionProps) {
         </svg>
       </div>
       <motion.div className="relative z-[5] text-center w-full px-5 max-w-5xl mx-auto pt-28 md:pt-24 pb-32" style={{ y, opacity }}>
-        <motion.div
-          className="inline-flex items-center justify-center gap-2 md:gap-3 mb-6 md:mb-8 px-4 md:px-6 py-2.5 md:py-3 rounded-full border mx-auto"
+        <motion.div className="inline-flex items-center justify-center gap-2 md:gap-3 mb-6 md:mb-8 px-4 md:px-6 py-2.5 md:py-3 rounded-full border mx-auto"
           style={{ borderColor: `${COLORS.orange}50`, background: `${COLORS.orange}15`, backdropFilter: 'blur(12px)', maxWidth: '100%' }}
-          initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, ease: [0.215, 0.61, 0.355, 1] }}>
+          initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, ease: [0.215, 0.61, 0.355, 1] }}>
           <motion.div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: COLORS.orange }}
             animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
           <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.45em] text-center leading-tight" style={{ color: COLORS.orange }}>
@@ -684,15 +634,13 @@ function HeroSection({ currentSlide, setCurrentSlide }: HeroSectionProps) {
         </motion.div>
         <motion.div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4 px-2"
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 1.3 }}>
-          <motion.a
-            href="mailto:itadmin@cerealmillers.co.ke?subject=Membership Application — CMA Kenya"
+          <motion.a href="mailto:itadmin@cerealmillers.co.ke?subject=Membership Application — CMA Kenya"
             className="w-full sm:w-auto px-8 md:px-12 py-4 md:py-5 rounded-full font-black uppercase text-[10px] tracking-[0.2em] text-white flex items-center justify-center gap-2 shadow-2xl"
             style={{ background: `linear-gradient(135deg, ${COLORS.orange}, ${COLORS.gold})`, boxShadow: `0 20px 40px rgba(232,114,42,0.35)` }}
             whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
             Become a Member <div className="w-4 h-4 flex-shrink-0"><Icons.ArrowUpRight /></div>
           </motion.a>
-          <motion.a
-            href="#about"
+          <motion.a href="#about"
             className="w-full sm:w-auto border border-white/25 text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center transition-all duration-500"
             style={{ backdropFilter: 'blur(10px)', background: 'rgba(255,255,255,0.07)' }}
             whileHover={{ scale: 1.03, borderColor: 'rgba(232,114,42,0.5)' }} whileTap={{ scale: 0.97 }}>
@@ -1672,8 +1620,7 @@ function Footer() {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 md:gap-12 mb-12 md:mb-16 pb-12 md:pb-16" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
             <div className="col-span-2 md:col-span-3 lg:col-span-2">
-              <div className="inline-block rounded-xl px-3 py-2 mb-5 md:mb-7"
-                style={{ background: '#FFFFFF', boxShadow: '0 2px 16px rgba(0,0,0,0.2)' }}>
+              <div className="inline-block rounded-xl px-3 py-2 mb-5 md:mb-7" style={{ background: '#FFFFFF', boxShadow: '0 2px 16px rgba(0,0,0,0.2)' }}>
                 <img src="/logo.png" alt="CMA 25 Years" className="h-10 md:h-12 w-auto object-contain" style={{ maxWidth: '140px' }} loading="lazy"
                   onError={(e) => { const t = e.target as HTMLImageElement; t.src = 'https://www.cerealmillers.co.ke/wp-content/uploads/2026/04/CMA@25-Logo.png'; }} />
               </div>
@@ -1738,8 +1685,7 @@ function LoadingScreen() {
   return (
     <motion.div className="fixed inset-0 z-[999] flex flex-col items-center justify-center" style={{ background: COLORS.navy }}
       exit={{ opacity: 0, scale: 1.05 }} transition={{ duration: 0.8, ease: [0.215, 0.61, 0.355, 1] }} role="status" aria-label="Loading">
-      <motion.div className="rounded-2xl px-6 py-4 mb-10 md:mb-12"
-        style={{ background: '#FFFFFF', boxShadow: '0 4px 32px rgba(0,0,0,0.25)' }}
+      <motion.div className="rounded-2xl px-6 py-4 mb-10 md:mb-12" style={{ background: '#FFFFFF', boxShadow: '0 4px 32px rgba(0,0,0,0.25)' }}
         initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }}>
         <img src="/logo.png" alt="CMA" className="h-16 md:h-20 w-auto object-contain" style={{ maxWidth: '200px' }}
           onError={(e) => { const t = e.target as HTMLImageElement; t.src = 'https://www.cerealmillers.co.ke/wp-content/uploads/2026/04/CMA@25-Logo.png'; }} />
