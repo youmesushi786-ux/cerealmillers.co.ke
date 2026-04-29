@@ -13,7 +13,6 @@ const COLORS = {
   white: '#FFFFFF',
 };
 
-// ── Slide 4 uses the local farmer image saved in /public/farmer.jpg ──
 const SLIDE4_URL = '/farmer.jpg';
 
 const BG_IMAGES = [
@@ -200,51 +199,51 @@ function useCountUp(target: number, duration = 2000, start = false): number {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CINEMATIC BACKGROUND — Slide 4 mobile fix: center the woman in the photo
+// CINEMATIC BACKGROUND
+// Slide 4: uses CSS backgroundImage with precise backgroundPosition
+// to ensure the farmer woman is always visible on mobile and desktop
 // ─────────────────────────────────────────────────────────────────────────────
 function CinematicBg({ currentSlide }: { currentSlide: number }) {
+  // Track window width to switch position
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   return (
     <div className="fixed inset-0 z-[-2] overflow-hidden" aria-hidden="true">
       {BG_IMAGES.map((img, i) => (
-        <motion.div key={i} className="absolute inset-0"
+        <motion.div
+          key={i}
+          className="absolute inset-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: currentSlide === i ? 1 : 0 }}
           transition={{ duration: 2.5, ease: 'easeInOut' }}>
 
           {i === 3 ? (
-            // ── Slide 4: special mobile/desktop handling ──
-            <>
-              {/* Mobile: shift up to show the woman clearly */}
-              <motion.img
-                src={img.url}
-                alt=""
-                className="w-full h-full object-cover block md:hidden"
-                style={{
-                  objectPosition: '50% 20%',
-                  filter: 'saturate(1.25) contrast(1.06) brightness(0.88)',
-                }}
-                animate={currentSlide === i ? { scale: [1, 1.04] } : { scale: 1 }}
-                transition={{ duration: 9, ease: 'easeInOut' }}
-              />
-              {/* Desktop: original positioning */}
-              <motion.img
-                src={img.url}
-                alt=""
-                className="w-full h-full object-cover hidden md:block"
-                style={{
-                  objectPosition: 'center 30%',
-                  filter: 'saturate(1.25) contrast(1.06) brightness(0.88)',
-                }}
-                animate={currentSlide === i ? { scale: [1, 1.04] } : { scale: 1 }}
-                transition={{ duration: 9, ease: 'easeInOut' }}
-              />
-            </>
+            // ── Slide 4: CSS background-image for precise farmer positioning ──
+            <motion.div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url('/farmer.jpg')`,
+                backgroundSize: 'cover',
+                backgroundRepeat: 'no-repeat',
+                // Mobile: shift right to show woman; Desktop: show top area
+                backgroundPosition: isMobile ? '75% center' : 'center 30%',
+                filter: 'saturate(1.25) contrast(1.06) brightness(0.88)',
+              }}
+              animate={currentSlide === i ? { scale: [1, 1.04] } : { scale: 1 }}
+              transition={{ duration: 9, ease: 'easeInOut' }}
+            />
           ) : (
-            // ── All other slides ──
+            // ── All other slides: standard img tag ──
             <motion.img
               src={img.url}
               alt=""
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover"
               style={{ objectPosition: 'center center' }}
               animate={currentSlide === i ? { scale: [1, 1.04] } : { scale: 1 }}
               transition={{ duration: 9, ease: 'easeInOut' }}
@@ -252,15 +251,21 @@ function CinematicBg({ currentSlide }: { currentSlide: number }) {
           )}
 
           {/* Standard cinematic overlay */}
-          <div className="absolute inset-0" style={{
-            background: 'linear-gradient(180deg, rgba(0,13,26,0.52) 0%, rgba(0,21,41,0.36) 50%, rgba(0,13,26,0.60) 100%)'
-          }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(180deg, rgba(0,13,26,0.52) 0%, rgba(0,21,41,0.36) 50%, rgba(0,13,26,0.60) 100%)'
+            }}
+          />
 
           {/* Slide-4 warm green tint */}
           {i === 3 && (
-            <div className="absolute inset-0" style={{
-              background: 'linear-gradient(160deg, rgba(34,85,34,0.10) 0%, rgba(201,168,76,0.07) 60%, rgba(0,13,26,0.15) 100%)',
-            }} />
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(160deg, rgba(34,85,34,0.10) 0%, rgba(201,168,76,0.07) 60%, rgba(0,13,26,0.15) 100%)',
+              }}
+            />
           )}
         </motion.div>
       ))}
